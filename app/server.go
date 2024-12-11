@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"log"
 	"net"
 	"os"
 )
@@ -22,15 +24,38 @@ func main() {
 		os.Exit(1)
 	}
 
-	conn, err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
+		}
+		go handleClientConnection(conn)
 	}
-	_, err = conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
+}
+
+func handleClientConnection(conn net.Conn) {
+	req := make([]byte, 1024)
+	n, err := conn.Read(req)
 	if err != nil {
-		fmt.Println("Error sending data: ", err.Error())
-		os.Exit(1)
+		log.Fatalf("Error reading data from connection %v", err)
+	}
+	fmt.Println("Client sent", n, "bytes")
+	fmt.Printf(`Following data is sent
+%s
+`, string(req[:n]))
+	if bytes.Contains(req[:n], []byte("GET / HTTP/1.1")) {
+		_, err = conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
+		if err != nil {
+			fmt.Println("Error sending data: ", err.Error())
+			os.Exit(1)
+		}
+	} else {
+
+		_, err = conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+		if err != nil {
+			log.Fatalf("Error sending data: %v", err)
+		}
 	}
 	defer conn.Close()
 }
