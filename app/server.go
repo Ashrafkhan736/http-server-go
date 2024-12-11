@@ -45,7 +45,7 @@ func handleClientConnection(conn net.Conn) {
 	fmt.Printf(`Following data is sent
 %s
 `, string(req[:n]))
-	rawPath, _, _ := bytes.Cut(req[:n], []byte("/r/n"))
+	rawPath, _, _ := bytes.Cut(req[:n], []byte("\r\n"))
 	path := string(rawPath)
 	resp := []byte("HTTP/1.1 404 Not Found\r\n\r\n")
 	if path == "GET / HTTP/1.1" {
