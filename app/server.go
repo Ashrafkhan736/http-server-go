@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"regexp"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports above (feel free to remove this!)
@@ -44,18 +45,31 @@ func handleClientConnection(conn net.Conn) {
 	fmt.Printf(`Following data is sent
 %s
 `, string(req[:n]))
-	if bytes.Contains(req[:n], []byte("GET / HTTP/1.1")) {
-		_, err = conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
-		if err != nil {
-			fmt.Println("Error sending data: ", err.Error())
-			os.Exit(1)
-		}
-	} else {
+	rawPath, _, _ := bytes.Cut(req[:n], []byte("/r/n"))
+	path := string(rawPath)
+	resp := []byte("HTTP/1.1 404 Not Found\r\n\r\n")
+	if path == "GET / HTTP/1.1" {
+		resp = []byte("HTTP/1.1 200 OK\r\n\r\n")
 
-		_, err = conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
-		if err != nil {
-			log.Fatalf("Error sending data: %v", err)
+	}
+	if found, _ := regexp.MatchString("GET /echo/.* HTTP/1.1", path); found {
+		pattern := `/echo/([^ ]+)`
+		re := regexp.MustCompile(pattern)
+		match := re.FindStringSubmatch(path)
+		// Check if a match is found
+		result := ""
+		if len(match) > 1 {
+			result = match[1]   // Captured group 1
+			fmt.Println(result) // Output: abc
+		} else {
+			fmt.Println("No match found")
 		}
+		resp = []byte(fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-type: text/plain\r\nContent-length:%d\r\n\r\n%s", len(result), result))
+	}
+
+	_, err = conn.Write(resp)
+	if err != nil {
+		log.Fatalf("Error sending data: %v", err)
 	}
 	defer conn.Close()
 }
