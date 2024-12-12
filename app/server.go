@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -40,6 +41,7 @@ func main() {
 }
 
 func handleClientConnection(conn net.Conn) {
+	dirname := os.Args[2]
 	req := make([]byte, 1024)
 	n, err := conn.Read(req)
 	if err != nil {
@@ -78,6 +80,27 @@ func handleClientConnection(conn net.Conn) {
 	if respStruct.body != "" {
 		respStruct.headers["content-type"] = "text/plain"
 		respStruct.headers["content-length"] = strconv.Itoa(len(respStruct.body))
+	}
+	if strings.HasPrefix(reqStruct.path, "/files") {
+		respStruct.status = http.StatusOK
+		re := regexp.MustCompile("/files/([^ ]+)")
+		match := re.FindStringSubmatch(reqStruct.path)
+		fileName := ""
+		if len(match) > 1 {
+			fileName = match[1]
+		}
+		fileData, err := os.ReadFile(filepath.Join(dirname, fileName))
+		if err != nil {
+
+			if os.IsNotExist(err) {
+				respStruct.status = http.StatusNotFound
+
+			}
+		} else {
+			respStruct.headers["content-type"] = "application/octet-stream"
+			respStruct.headers["content-length"] = strconv.Itoa(len(fileData))
+			respStruct.body = string(fileData)
+		}
 	}
 
 	_, err = conn.Write(getFlattenHttpResponse(respStruct))
