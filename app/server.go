@@ -110,7 +110,7 @@ func parseHttpRequest(req []byte) HttpRequest {
 	return reqStruct
 }
 func getFlattenHttpResponse(respStruct HTTPResponse) []byte {
-	status := fmt.Sprintf("%d %s", respStruct.status, http.StatusText(http.StatusNotFound))
+	status := fmt.Sprintf("%d %s", respStruct.status, http.StatusText(respStruct.status))
 	flattenHeaders := ""
 	for k, v := range respStruct.headers {
 		flattenHeaders += fmt.Sprintf("%s: %s%s", k, v, CRLF)
