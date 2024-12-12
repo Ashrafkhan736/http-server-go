@@ -8,7 +8,7 @@ type HttpRequest struct {
 }
 
 type HTTPResponse struct {
-	status      string
+	status      int
 	headers     map[string]string
 	body        string
 	httpVersion string
