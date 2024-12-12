@@ -41,7 +41,11 @@ func main() {
 }
 
 func handleClientConnection(conn net.Conn) {
-	dirname := os.Args[2]
+	dirname := ""
+	if len(os.Args) == 2 {
+
+		dirname = os.Args[2]
+	}
 	req := make([]byte, 1024)
 	n, err := conn.Read(req)
 	if err != nil {
