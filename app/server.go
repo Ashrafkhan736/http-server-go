@@ -77,7 +77,7 @@ func handleClientConnection(conn net.Conn) {
 
 	if respStruct.body != "" {
 		respStruct.headers["content-type"] = "text/plain"
-		respStruct.headers["content-lenght"] = strconv.Itoa(len(respStruct.body))
+		respStruct.headers["content-length"] = strconv.Itoa(len(respStruct.body))
 	}
 
 	_, err = conn.Write(getFlattenHttpResponse(respStruct))
