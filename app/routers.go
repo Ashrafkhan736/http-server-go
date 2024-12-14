@@ -29,7 +29,7 @@ func echoRouter(reqStruct HttpRequest, match []string, respStruct *HttpResponse)
 	encodings, ok := reqStruct.headers["accept-encoding"]
 	if ok {
 		for _, enc := range strings.Split(encodings, ",") {
-			if enc == "gzip" {
+			if strings.Trim(enc, " ") == "gzip" {
 				respStruct.headers["content-encoding"] = "gzip"
 				break
 			}
