@@ -7,6 +7,7 @@ type HttpRequest struct {
 	path        string
 	httpVersion string
 	headers     map[string]string
+	body        string
 }
 
 type HttpResponse struct {

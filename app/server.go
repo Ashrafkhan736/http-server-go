@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports above (feel free to remove this!)
@@ -49,7 +50,7 @@ func handleClientConnection(conn net.Conn) {
 	respStruct.httpVersion = reqStruct.httpVersion
 	respStruct.headers = map[string]string{}
 	for _, pa := range patternActions {
-		if pa.re.MatchString(reqStruct.path) {
+		if pa.re.MatchString(reqStruct.path) && strings.EqualFold(pa.method, reqStruct.method) {
 			pa.action(reqStruct, pa.re.FindStringSubmatch(reqStruct.path), &respStruct)
 		}
 	}

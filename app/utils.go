@@ -29,6 +29,7 @@ func parseHttpRequest(req []byte) HttpRequest {
 		headers[strings.ToLower(key)] = strings.TrimSpace(value)
 	}
 	reqStruct.headers = headers
+	reqStruct.body = parts[len(parts)-1]
 	return reqStruct
 }
 func getFlattenHttpResponse(respStruct HttpResponse) []byte {

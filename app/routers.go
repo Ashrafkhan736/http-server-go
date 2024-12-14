@@ -58,7 +58,7 @@ func readFileRouter(_ HttpRequest, match []string, respStruct *HttpResponse) {
 	updateRespHeader(respStruct, "application/octet-stream")
 }
 
-func createFileRouter(_ HttpRequest, match []string, respStruct *HttpResponse) {
+func createFileRouter(reqStruct HttpRequest, match []string, respStruct *HttpResponse) {
 	if len(os.Args) < 2 || len(match) < 1 {
 		respStruct.status = 404
 		return
@@ -66,7 +66,7 @@ func createFileRouter(_ HttpRequest, match []string, respStruct *HttpResponse) {
 	dirname := os.Args[2]
 	fileName := match[1]
 
-	fileData, err := os.ReadFile(filepath.Join(dirname, fileName))
+	err := os.WriteFile(filepath.Join(dirname, fileName), []byte(reqStruct.body), 0644)
 	if err != nil {
 
 		if os.IsNotExist(err) {
@@ -74,7 +74,6 @@ func createFileRouter(_ HttpRequest, match []string, respStruct *HttpResponse) {
 			return
 		}
 	}
-	respStruct.status = 200
-	respStruct.body = string(fileData)
-	updateRespHeader(respStruct, "application/octet-stream")
+	respStruct.status = 201
+	// updateRespHeader(respStruct, "application/octet-stream")
 }
