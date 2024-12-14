@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var patternActions = []PatternAction{
@@ -24,6 +25,15 @@ func echoRouter(reqStruct HttpRequest, match []string, respStruct *HttpResponse)
 	if len(match) < 1 {
 		respStruct.status = http.StatusNotFound
 		return
+	}
+	encodings, ok := reqStruct.headers["accept-encoding"]
+	if ok {
+		for _, enc := range strings.Split(encodings, ",") {
+			if enc == "gzip" {
+				respStruct.headers["content-encoding"] = "gzip"
+				break
+			}
+		}
 	}
 	respStruct.status = http.StatusOK
 	respStruct.body = match[1]
