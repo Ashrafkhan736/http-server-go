@@ -1,5 +1,7 @@
 package main
 
+import "regexp"
+
 type HttpRequest struct {
 	method      string
 	path        string
@@ -7,9 +9,15 @@ type HttpRequest struct {
 	headers     map[string]string
 }
 
-type HTTPResponse struct {
+type HttpResponse struct {
 	status      int
 	headers     map[string]string
 	body        string
 	httpVersion string
+}
+
+type PatternAction struct {
+	re     regexp.Regexp
+	action func(HttpRequest, []string, *HttpResponse)
+	method string
 }
