@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -26,17 +29,28 @@ func echoRouter(reqStruct HttpRequest, match []string, respStruct *HttpResponse)
 		respStruct.status = http.StatusNotFound
 		return
 	}
+	respStruct.body = match[1]
 	encodings, ok := reqStruct.headers["accept-encoding"]
 	if ok {
 		for _, enc := range strings.Split(encodings, ",") {
 			if strings.Trim(enc, " ") == "gzip" {
 				respStruct.headers["content-encoding"] = "gzip"
+				buff := bytes.Buffer{}
+				writer := gzip.NewWriter(&buff)
+				_, err := writer.Write([]byte(match[1]))
+				if err != nil {
+					log.Fatalf("Error during writing in buff %v", err)
+				}
+				err = writer.Close()
+				if err != nil {
+					log.Fatalf("Error during closing writer %v", err)
+				}
+				respStruct.body = buff.String()
 				break
 			}
 		}
 	}
 	respStruct.status = http.StatusOK
-	respStruct.body = match[1]
 	respStruct.headers["content-type"] = "text/plain"
 	respStruct.headers["content-length"] = strconv.Itoa(len(respStruct.body))
 }
